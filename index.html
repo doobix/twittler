@@ -6,33 +6,73 @@
 
     <style type="text/css">
     body {margin:0;background:#336699;font-family:sans-serif;font-size:14px;}
+    a {color:green;text-decoration:none;}
+    a:hover {text-decoration:underline;}
     #header {color:#666;background:white;padding:10px;text-align:center;margin:0;}
-    .tweet {background:white;width:500px;margin:10px auto;;padding:10px;}
+    #navbar {color:#666;background:#DDD;padding:5px;text-align:center;display:none;}
+    #navbar a {color:#666;}
+    .tweet {background:white;width:500px;margin:10px auto;padding:10px;}
     .date {color:#666;font-size:12px;}
     .user {font-weight:bold;}
     .message {color:black;margin:5px;}
+    .hidden {display:none;}
     </style>
   </head>
   <body>
     <h2 id="header">Twittler</h2>
+    <div id="navbar"><span></span><a href="#" onclick="clearUser()">Click here to show all users</a></div>
     <div id="tweets"></div>
     <script>
+      var timeout;
+      var username = "";
+
       $(document).ready(function(){
         displayTweets();
       });
 
+      // Display all tweets
       function displayTweets() {
+        var hidden = "";
         var $body = $('#tweets');
         $body.html('');
 
         var index = streams.home.length - 1;
         while(index >= 0){
-          var tweet = streams.home[index];console.log(streams.home);
-          var $tweet = $('<div class="tweet"><div class="date">' + tweet.created_at + '</div><div class="message"><span class="user">@' + tweet.user + '</span>: ' + tweet.message + '</div></div>');
+          var tweet = streams.home[index];
+
+          if (username != "") {
+            // If username matches, show the tweet
+            if (tweet.user == username)
+              hidden = "";
+            else // Otherwise hide the tweet
+              hidden = "hidden";
+          }
+
+          // The Tweet
+          var $tweet = $('<div class="tweet ' + hidden + '"><div class="date">' + tweet.created_at + '</div><div class="message"><a href="#" class="user" onclick="showUser(\'' + tweet.user + '\')">@' + tweet.user + '</a>: ' + tweet.message + '</div></div>');
           $tweet.appendTo($body);
           index -= 1;
         }
-        window.setTimeout(displayTweets,1000);
+
+        timeout = window.setTimeout(displayTweets,3000);
+      }
+
+      // Show only one user
+      function showUser(username) {
+        clearTimeout(timeout);
+        window.username = username;
+        $("#navbar span").html('');
+        $("#navbar span").html("Showing only <span class='user'>@"+username + "</span>'s tweets. ");
+        $("#navbar").slideDown(500);
+        displayTweets();
+      }
+
+      // Show all the users
+      function clearUser() {
+        clearTimeout(timeout);
+        window.username = "";
+        $("#navbar").slideUp(500);
+        displayTweets();
       }
     </script>
   </body>
